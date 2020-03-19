@@ -6,6 +6,7 @@ using Microsoft.Dynamics365.UIAutomation.Api;
 using Microsoft.Dynamics365.UIAutomation.Browser;
 using System;
 using System.Security;
+using OpenQA.Selenium;
 
 namespace Microsoft.Dynamics365.UIAutomation.Sample.Web
 {
@@ -26,7 +27,7 @@ namespace Microsoft.Dynamics365.UIAutomation.Sample.Web
                 xrmBrowser.GuidedHelp.CloseGuidedHelp();
                 xrmBrowser.Dialogs.CloseWarningDialog();
                 
-                xrmBrowser.ThinkTime(500);
+                xrmBrowser.ThinkTime(100);
                 xrmBrowser.Navigation.OpenSubArea("Sales", "Accounts");
 
                 xrmBrowser.ThinkTime(2000);
@@ -43,6 +44,37 @@ namespace Microsoft.Dynamics365.UIAutomation.Sample.Web
                 xrmBrowser.CommandBar.ClickCommand("Save & Close");
                 xrmBrowser.ThinkTime(2000);
             }
+        }
+
+        private void RedirectAction(LoginRedirectEventArgs obj)
+        {
+            var d = obj.Driver;
+
+            //if (d.IsVisible(By.Id("i0116")))
+            //{
+            //    d.FindElement(By.Id("i0116")).SendKeys(obj.Username.ToUnsecureString());
+            //}
+
+            //if (d.IsVisible(By.Id("i0118")))
+            //{
+            //    d.FindElement(By.Id("i0118")).SendKeys(obj.Password.ToUnsecureString());
+            //}
+
+            // Wait for the "StaySignedIn"-Page and disagree
+            d.WaitUntilVisible(By.XPath(Elements.Xpath[Reference.Login.StaySignedIn])
+                , new TimeSpan(0, 0, 60),
+                $"Could not find element {Reference.Login.StaySignedIn}"
+                );
+
+            if (d.IsVisible(By.Id("idBtn_Back")))
+            {
+                d.FindElement(By.Id("idBtn_Back")).Click(true);
+            }
+
+            //Wait for CRM Page to load
+            d.WaitUntilVisible(By.XPath(Elements.Xpath[Reference.Login.CrmMainPage])
+                , new TimeSpan(0, 0, 60),
+                f => throw new Exception("Login page failed."));
         }
     }
 }
